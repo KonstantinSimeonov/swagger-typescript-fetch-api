@@ -77,15 +77,17 @@ export const {{classname}}FetchParamCreactor = {
     {{nickname}}({{#hasParams}}params: { {{#allParams}} {{paramName}}{{^required}}?{{/required}}: {{{dataType}}};{{/allParams}} }{{/hasParams}}): FetchArgs {
         const baseUrl = `{{path}}`{{#pathParams}}
             .replace(`{${"{{baseName}}"}}`, `${ params.{{paramName}} }`){{/pathParams}};
-        let urlObj = url.parse(baseUrl, true);
 {{#hasQueryParams}}
-        urlObj.query = {{#supportsES6}}Object.{{/supportsES6}}assign({}, urlObj.query, { {{#queryParams}}
-            "{{baseName}}": params.{{paramName}},{{/queryParams}}
-        });
+            const parsedUrl = url.parse(baseUrl, true);
+            parsedUrl.query = Object.assign({}, parsedUrl.query, { {{#queryParams}}"{{baseName}}": params.{{paramName}},{{/queryParams}} })
 {{/hasQueryParams}}
-
         return {
-            url: url.format(urlObj),
+{{^hasQueryParams}}
+            url: baseUrl,
+{{/hasQueryParams}}
+{{#hasQueryParams}}
+            url: url.format(parsedUrl),
+{{/hasQueryParams}}
             options: {
                 method: "{{httpMethod}}",
                 headers: {
